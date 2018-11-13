@@ -1,10 +1,13 @@
 package com.humine.events;
 
+import org.bukkit.Bukkit;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.inventory.ItemStack;
 
 import com.aypi.Aypi;
 import com.humine.main.BattleMain;
@@ -35,6 +38,18 @@ public class ConnectPlayerEvent implements Listener {
 				event.getDrops().clear();
 			}
 		}
+		
+		if(event.getEntity() instanceof ArmorStand) {
+			ArmorStand as = (ArmorStand) event.getEntity();
+			com.humine.util.ArmorStand asUtil = getArmorStandUtil(as);
+			
+			if(asUtil != null) {
+				for(ItemStack item : event.getDrops()) {
+					for (Player p : Bukkit.getOnlinePlayers())
+						BattleMain.sendMessage(p, "Item: " + item.getType());
+				}
+			}
+		}
 	}
 
 	// detecte si le joueur avais une armorStand a son effigie sur le jeu
@@ -44,8 +59,9 @@ public class ConnectPlayerEvent implements Listener {
 
 		while (i < BattleMain.getInstance().getArmors().size() && valid == false) {
 
-			if (BattleMain.getInstance().getArmors().get(i).getCustomName().equals(player.getName()))
+			if (BattleMain.getInstance().getArmors().get(i).getCustomName().equals(player.getName())) {
 				valid = true;
+			}
 
 			i++;
 		}
@@ -81,8 +97,10 @@ public class ConnectPlayerEvent implements Listener {
 
 		while (i < BattleMain.getInstance().getArmors().size() && dead == false) {
 
-			if (BattleMain.getInstance().getArmors().get(i).getArmorStand().isDead())
+			if (BattleMain.getInstance().getArmors().get(i).getArmorStand().isValid() == false) {
 				dead = true;
+			}
+				
 
 			i++;
 		}
@@ -123,6 +141,24 @@ public class ConnectPlayerEvent implements Listener {
 
 			i++;
 		}
+	}
+	
+	// recupere l'armorstand du package util
+	private com.humine.util.ArmorStand getArmorStandUtil(ArmorStand armorStand) {
+		boolean find = false;
+		int i = 0;
+		com.humine.util.ArmorStand armor = null;
+
+		while (i < BattleMain.getInstance().getArmors().size() && find == false) {
+			if (BattleMain.getInstance().getArmors().get(i).getArmorStand().getCustomName()
+					.equals(armorStand.getCustomName())) {
+				find = true;
+				armor = BattleMain.getInstance().getArmors().get(i);
+			}
+			i++;
+		}
+
+		return armor;
 	}
 
 }

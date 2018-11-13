@@ -10,13 +10,14 @@ public class ArmorStand {
 	private String name;
 	private org.bukkit.entity.ArmorStand armorStand;
 	private ItemStack[] inventory;
+	private boolean Drop;
 	
 	public ArmorStand(Player player) {
 		this.armorStand = player.getWorld().spawn(player.getLocation(), org.bukkit.entity.ArmorStand.class);
 		this.name = player.getName();
 		
 		this.inventory = player.getInventory().getContents();
-		
+		this.Drop = false;
 		
 		this.armorStand.setBasePlate(false);
 		this.armorStand.setSmall(false);
@@ -59,5 +60,13 @@ public class ArmorStand {
 
 	public void setInventory(ItemStack[] inventory) {
 		this.inventory = inventory;
+	}
+
+	public boolean hasDrop() {
+		return Drop;
+	}
+
+	public void setDrop(boolean drop) {
+		Drop = drop;
 	}
 }

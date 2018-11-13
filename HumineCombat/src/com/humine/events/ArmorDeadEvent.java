@@ -1,7 +1,11 @@
 package com.humine.events;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Color;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Particle;
+import org.bukkit.Particle.DustOptions;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -12,6 +16,7 @@ import org.bukkit.inventory.ItemStack;
 
 import com.humine.main.BattleMain;
 
+
 public class ArmorDeadEvent implements Listener {
 
 	@EventHandler
@@ -21,24 +26,50 @@ public class ArmorDeadEvent implements Listener {
 		com.humine.util.ArmorStand armorStandUtil;
 		ArmorStand armorStandVictim = null;
 		Player killer = null;
-		
-		if(victim instanceof ArmorStand) { // si la cible est une armorStand
-			if(damager instanceof Player) { // si la personne qui met des dégats est un joueur
-				
-				//initiation des variables
+
+		if (victim instanceof ArmorStand) {
+			armorStandVictim = (ArmorStand) victim;
+			armorStandUtil = getArmorStandUtil(armorStandVictim);
+
+			if (damager instanceof Player) {
+
+				// initiation des variables
 				killer = (Player) damager;
-				armorStandVictim = (ArmorStand) victim;
-				armorStandUtil = getArmorStandUtil(armorStandVictim);
-				//fin
-				
-				if(armorStandUtil != null) { // si l'armorStand victim est une bien une armorStand d'un joueur
+				// fin
+
+				if (armorStandUtil != null) {
+
+					if (armorStandUtil.getArmorStand().getHealth() > 2.0){
+						armorStandUtil.getArmorStand().setHealth((armorStandUtil.getArmorStand().getHealth() - 2.0));
+					}
+					else {
+						armorStandUtil.getArmorStand().setHealth(0.0);
+						
+						if(armorStandUtil.hasDrop() == false) {
+							dropArmor(armorStandUtil.getArmorStand(), armorStandUtil.getInventory());
+							
+							for (Player p : Bukkit.getOnlinePlayers())
+								BattleMain.sendMessage(p, armorStandUtil.getCustomName() + " was slain by " + killer.getName() + " (Disconnected)");
+							
+							
+							armorStandUtil.setDrop(true);
+						}
+					}
 					
-					armorStandUtil.getArmorStand().setHealth(0.0);
-					
-					for (Player p : Bukkit.getOnlinePlayers())
-						BattleMain.sendMessage(p, armorStandUtil.getCustomName() + " was slain by " + killer.getName() + " (Disconnected)");
-					
-					dropArmor(armorStandUtil.getArmorStand(), armorStandUtil.getInventory());
+					makeBloodParticle(armorStandUtil.getArmorStand().getLocation());
+				}
+			} else {
+
+				if (armorStandUtil != null) {
+
+					if (armorStandUtil.getArmorStand().getHealth() <= 0.0) {
+						armorStandUtil.getArmorStand().setVisible(false);
+						dropArmor(armorStandUtil.getArmorStand(), armorStandUtil.getInventory());
+						
+						for (Player p : Bukkit.getOnlinePlayers())
+							BattleMain.sendMessage(p, armorStandUtil.getCustomName() + " was killed (disconnected)");
+					}
+
 				}
 			}
 		}
@@ -62,7 +93,8 @@ public class ArmorDeadEvent implements Listener {
 		com.humine.util.ArmorStand armor = null;
 
 		while (i < BattleMain.getInstance().getArmors().size() && find == false) {
-			if (BattleMain.getInstance().getArmors().get(i).getArmorStand().getCustomName().equals(armorStand.getCustomName())) {
+			if (BattleMain.getInstance().getArmors().get(i).getArmorStand().getCustomName()
+					.equals(armorStand.getCustomName())) {
 				find = true;
 				armor = BattleMain.getInstance().getArmors().get(i);
 			}
@@ -70,5 +102,10 @@ public class ArmorDeadEvent implements Listener {
 		}
 
 		return armor;
+	}
+	
+	private void makeBloodParticle(Location loc) {
+		DustOptions dustOptions = new DustOptions(Color.RED, (float) 10.0);
+        loc.getWorld().spawnParticle(Particle.REDSTONE, loc, 10, 0, 0.5, 0, 2, dustOptions);
 	}
 }

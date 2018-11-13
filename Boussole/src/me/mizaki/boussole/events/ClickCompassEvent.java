@@ -178,13 +178,19 @@ public class ClickCompassEvent implements Listener
 		meta.setDisplayName(ChatColor.AQUA + "NORD");
 		nord.setItemMeta(meta);
 		
+		
 		this.poleInventory.setButton(0, new Button(nord, new MenuItemListener() {
 			
 			@Override
 			public void onItemClick()
 			{
+				double x, y, z;
+				x = player.getLocation().getX();
+				y = player.getLocation().getY();
+				z = (player.getLocation().getZ() - 5000.0);
+				
 				CompassMain.sendMessage(player, "Direction le nord !");
-				player.setCompassTarget(new Location(player.getWorld(), player.getLocation().getX(), player.getLocation().getY(), (player.getLocation().getZ() - 10000.0)));
+				player.setCompassTarget(new Location(player.getWorld(), x, y, z));
 				poleInventory.closePlayerMenu();
 				
 			}
@@ -201,8 +207,14 @@ public class ClickCompassEvent implements Listener
 			@Override
 			public void onItemClick()
 			{
+				double x, y, z;
+				x = player.getLocation().getX();
+				y = player.getLocation().getY();
+				z = (player.getLocation().getZ() + 5000.0);
+				Location loc = new Location(player.getWorld(), x, y, z);
+				
 				CompassMain.sendMessage(player, "Direction le sud !");
-				player.setCompassTarget(new Location(player.getWorld(), player.getLocation().getX(), player.getLocation().getY(), (player.getLocation().getZ() + 10000.0)));
+				player.setCompassTarget(loc);
 				poleInventory.closePlayerMenu();
 			}
 		}));
@@ -217,8 +229,14 @@ public class ClickCompassEvent implements Listener
 			@Override
 			public void onItemClick()
 			{
+				double x, y, z;
+				x = (player.getLocation().getX() + 5000.0);
+				y = player.getLocation().getY();
+				z = player.getLocation().getZ();
+				Location loc = new Location(player.getWorld(), x, y, z);
+				
 				CompassMain.sendMessage(player, "Direction l'est !");
-				player.setCompassTarget(new Location(player.getWorld(), (player.getLocation().getX() + 10000.0), player.getLocation().getY(), player.getLocation().getZ()));
+				player.setCompassTarget(loc);
 				poleInventory.closePlayerMenu();
 			}
 		}));
@@ -233,8 +251,14 @@ public class ClickCompassEvent implements Listener
 			@Override
 			public void onItemClick()
 			{
+				double x, y, z;
+				x = (player.getLocation().getX() - 5000.0);
+				y = player.getLocation().getY();
+				z = player.getLocation().getZ();
+				Location loc = new Location(player.getWorld(), x, y, z);
+				
 				CompassMain.sendMessage(player, "Direction l'ouest !");
-				player.setCompassTarget(new Location(player.getWorld(), (player.getLocation().getX() - 10000.0), player.getLocation().getY(), player.getLocation().getZ()));
+				player.setCompassTarget(loc);
 				poleInventory.closePlayerMenu();
 			}
 		}));
