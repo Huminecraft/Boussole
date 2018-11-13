@@ -150,7 +150,7 @@ public class ClickCompassEvent implements Listener
 		}));
 		
 		
-		ItemStack pole = new ItemStack(Material.ENDER_PEARL);
+		ItemStack pole = new ItemStack(Material.COMPASS);
 		meta = pole.getItemMeta();
 		meta.setDisplayName(ChatColor.AQUA + "Pointez vers un pole");
 		pole.setItemMeta(meta);
