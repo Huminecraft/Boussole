@@ -14,10 +14,9 @@ public class ReceiptTargetNameEvent implements Listener {
     @EventHandler
     public void onReceipt(AsyncPlayerChatEvent event) {
 	final Player player = event.getPlayer();
-	Player target = Bukkit.getPlayer(CompassMain.getInstance().getTargetDemands().get(player.getName()));
-	if ((CompassMain.getInstance().getTargetDemands().containsKey(player.getName()))
-		|| (!CompassMain.getInstance().isPlayerBlocked(player.getName(), target.getName()))) {
-	    if (target != null) {
+	if ((CompassMain.getInstance().getTargetDemands().containsKey(player.getName()))) {
+	    Player target = Bukkit.getPlayer(CompassMain.getInstance().getTargetDemands().get(player.getName()));
+	    if ((target != null) && (!CompassMain.getInstance().isPlayerBlocked(player.getName(), target.getName()))) {
 		if (event.getMessage().equalsIgnoreCase("yes") || event.getMessage().equalsIgnoreCase("oui")) {
 		    CompassMain.sendMessage(player, "Vous avez accepté la demande");
 		    CompassMain.sendMessage(target,
@@ -33,7 +32,7 @@ public class ReceiptTargetNameEvent implements Listener {
 			    ChatColor.GOLD + player.getName() + ChatColor.RED + " a refuse(e) votre demande");
 		}
 	    } else
-		CompassMain.sendMessage(player, "Joueur déconnecté");
+		CompassMain.sendMessage(player, "Le joueur déconnecté ou vous a bloqué");
 
 	    CompassMain.getInstance().getTargetDemands().remove(player.getName());
 	    event.setCancelled(true);
@@ -61,8 +60,15 @@ public class ReceiptTargetNameEvent implements Listener {
 	}
 
 	if (CompassMain.getInstance().getBlockDemands().contains(player.getName())) {
-	    CompassMain.getInstance().addBlockedPlayterToList(player.getName(), target.getName());
-	    CompassMain.sendMessage(player, " vous avez bloqué " + ChatColor.GREEN + target.getName());
+	    String target = event.getMessage();
+	    if (CompassMain.getInstance().isPlayerBlocked(player.getName(), target)) {
+		CompassMain.getInstance().removeBlockedPlayerFromList(player.getName(), target);
+		CompassMain.sendMessage(player, " vous avez débloqué " + ChatColor.GREEN + target);
+
+	    } else {
+		CompassMain.getInstance().addBlockedPlayerToList(player.getName(), target);
+		CompassMain.sendMessage(player, " vous avez bloqué " + ChatColor.GREEN + target);
+	    }
 
 	}
 

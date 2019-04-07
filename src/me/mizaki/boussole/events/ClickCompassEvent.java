@@ -169,16 +169,16 @@ public class ClickCompassEvent implements Listener
 		
 		ItemStack block = new ItemStack(Material.IRON_BARS);
 		meta = block.getItemMeta();
-		meta.setDisplayName(ChatColor.AQUA + "Bloquer un joueur");
+		meta.setDisplayName(ChatColor.AQUA + "Bloquer/débloquer un joueur");
 		block.setItemMeta(meta);
 		
-		this.mainInventory.setButton(5, new Button(block, new MenuItemListener() {
+		this.mainInventory.setButton(6, new Button(block, new MenuItemListener() {
 			
 			@Override
 			public void onItemClick()
 			{
 				CompassMain.sendMessage(player, "Veuillez entrer le nom du joueur à bloquer ci-dessous");
-				CompassMain.getInstance().getSearchDemands().add(player.getName());
+				CompassMain.getInstance().getBlockDemands().add(player.getName());
 				mainInventory.closePlayerMenu();
 			}
 		}));

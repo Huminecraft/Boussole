@@ -132,8 +132,11 @@ public class CompassMain extends JavaPlugin {
 	return searchDemands;
     }
 
-    public void addBlockedPlayterToList(String name, String player) {
+    public void addBlockedPlayerToList(String name, String player) {
 	blockedPlayers.get(name).add(player);
+    }
+    public void removeBlockedPlayerFromList(String name, String player) {
+	blockedPlayers.get(name).remove(player);
     }
     
     public boolean isPlayerBlocked(String name, String player) {
