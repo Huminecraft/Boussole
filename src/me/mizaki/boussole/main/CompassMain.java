@@ -135,6 +135,15 @@ public class CompassMain extends JavaPlugin {
     public void addBlockedPlayterToList(String name, String player) {
 	blockedPlayers.get(name).add(player);
     }
+    
+    public boolean isPlayerBlocked(String name, String player) {
+	for (int i = 0; i < blockedPlayers.size(); i++) {
+		if (blockedPlayers.get(name).get(i).toString().equalsIgnoreCase(player)) {
+		    return true;
+		}
+	}
+	return false;
+    }
 
     public HashMap<String, String> getTargetDemands() {
 	return targetDemands;
