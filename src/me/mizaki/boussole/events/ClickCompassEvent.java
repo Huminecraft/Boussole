@@ -77,7 +77,7 @@ public class ClickCompassEvent implements Listener
 		
 		ItemStack position = new ItemStack(Material.ENDER_PEARL);
 		meta = position.getItemMeta();
-		meta.setDisplayName(ChatColor.AQUA + "Position enregistree");
+		meta.setDisplayName(ChatColor.AQUA + "Position enregistrée");
 		position.setItemMeta(meta);
 		
 		this.mainInventory.setButton(1, new Button(position, new MenuItemListener() {
@@ -87,10 +87,10 @@ public class ClickCompassEvent implements Listener
 			{
 				if(CompassMain.getInstance().getPositions().containsKey(player.getName())) {
 					player.setCompassTarget(CompassMain.getInstance().getPositions().get(player.getName()));
-					CompassMain.sendMessage(player, "Direction la position enregistree !");
+					CompassMain.sendMessage(player, "Direction la position enregistrée !");
 				}
 				else
-					CompassMain.sendMessage(player, "Aucune position enregistree !");
+					CompassMain.sendMessage(player, "Aucune position enregistrée !");
 				
 				mainInventory.closePlayerMenu();
 			}
@@ -114,7 +114,7 @@ public class ClickCompassEvent implements Listener
 		
 		ItemStack spawn = new ItemStack(Material.BLUE_BED);
 		meta = spawn.getItemMeta();
-		meta.setDisplayName(ChatColor.AQUA + "Spawn par defaut");
+		meta.setDisplayName(ChatColor.AQUA + "Spawn par défaut");
 		spawn.setItemMeta(meta);
 		
 		this.mainInventory.setButton(3, new Button(spawn, new MenuItemListener() {
@@ -124,16 +124,16 @@ public class ClickCompassEvent implements Listener
 			{
 				if(CompassMain.getInstance().getDefaultSpawn() != null) {
 					player.setCompassTarget(CompassMain.getInstance().getDefaultSpawn());
-					CompassMain.sendMessage(player, "Direction le spawn de depart !");
+					CompassMain.sendMessage(player, "Direction le spawn de départ !");
 				}
 				else
-					CompassMain.sendMessage(player, "Aucun spawn de depart defini");
+					CompassMain.sendMessage(player, "Aucun spawn de départ défini");
 				
 				mainInventory.closePlayerMenu();
 			}
 		}));
 		
-		ItemStack origine= new ItemStack(Material.APPLE);
+		ItemStack origine = new ItemStack(Material.APPLE);
 		meta = origine.getItemMeta();
 		meta.setDisplayName(ChatColor.AQUA + "Pointez le 0 !");
 		origine.setItemMeta(meta);
@@ -167,7 +167,24 @@ public class ClickCompassEvent implements Listener
 			}
 		}));
 		
+		ItemStack block = new ItemStack(Material.IRON_BARS);
+		meta = block.getItemMeta();
+		meta.setDisplayName(ChatColor.AQUA + "Bloquer un joueur");
+		block.setItemMeta(meta);
+		
+		this.mainInventory.setButton(5, new Button(block, new MenuItemListener() {
+			
+			@Override
+			public void onItemClick()
+			{
+				CompassMain.sendMessage(player, "Veuillez entrer le nom du joueur à bloquer ci-dessous");
+				CompassMain.getInstance().getSearchDemands().add(player.getName());
+				mainInventory.closePlayerMenu();
+			}
+		}));
+		
 	}
+	
 	
 	private void fillPoleInventory(Player player) {
 		
