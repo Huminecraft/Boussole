@@ -11,152 +11,114 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import me.mizaki.boussole.commands.ChangeRegisterLocationCommand;
-import me.mizaki.boussole.events.ClickCompassEvent;
+import me.mizaki.boussole.commands.CompassFollowAcceptCommand;
+import me.mizaki.boussole.commands.CompassFollowRefuseCommand;
+import me.mizaki.boussole.events.CloseCompassEvent;
+import me.mizaki.boussole.events.OpenCompassEvent;
 import me.mizaki.boussole.events.QuitEvent;
 import me.mizaki.boussole.events.ReceiptTargetNameEvent;
+import me.mizaki.boussole.utils.CompassManager;
+import me.mizaki.boussole.utils.PositionInvitationManager;
 
 public class CompassMain extends JavaPlugin {
 
-    private static CompassMain instance;
+	private static CompassMain instance;
+	
+	private static PositionInvitationManager positionInvitationManager;
+	private static CompassManager compassManager;
+	
+	private static List<String> searchDemands;
+	private HashMap<String, Location> Positions;
+	
+	@Override
+	public void onEnable() {
+		super.onEnable();
 
-    private ClickCompassEvent clickCompassEvent;
-    private ReceiptTargetNameEvent receiptTargetNameEvent;
-    private QuitEvent quitEvent;
+		instance = this;
+		positionInvitationManager = new PositionInvitationManager();
+		compassManager = new CompassManager();
+		
+		Positions = new HashMap<String, Location>();
 
-    private ChangeRegisterLocationCommand changeRegisterLocationCommand;
-    private HashMap<String, Location> Positions;
-    private Location defaultSpawn;
+		searchDemands = new ArrayList<String>();
 
-    private List<String> searchDemands;
-    private HashMap<String, String> targetDemands;
-    private HashMap<String, List<String>> blockedPlayers;
-    private List<String> blockDemands;
-    
+		this.saveDefaultConfig();
+		this.getDataFolder().setWritable(true);
 
-    @Override
-    public void onEnable() {
-	super.onEnable();
-
-	instance = this;
-	this.clickCompassEvent = new ClickCompassEvent();
-	this.receiptTargetNameEvent = new ReceiptTargetNameEvent();
-	this.quitEvent = new QuitEvent();
-
-	Positions = new HashMap<String, Location>();
-	changeRegisterLocationCommand = new ChangeRegisterLocationCommand();
-
-	this.searchDemands = new ArrayList<String>();
-	this.targetDemands = new HashMap<String, String>();
-
-	this.saveDefaultConfig();
-	this.getDataFolder().setWritable(true);
-
-	if (this.getFile().exists()) {
-	    if (this.getConfig().contains("RegisterLocation")) {
-		for (String key : this.getConfig().getConfigurationSection("RegisterLocation").getKeys(false)) {
-		    this.Positions.put(key, (Location) this.getConfig().get("RegisterLocation." + key));
+		if (this.getFile().exists()) {
+			if (this.getConfig().contains("RegisterLocation")) {
+				for (String key : this.getConfig().getConfigurationSection("RegisterLocation").getKeys(false)) {
+					this.Positions.put(key, (Location) this.getConfig().get("RegisterLocation." + key));
+				}
+			}
 		}
-	    }
 
-	    if (this.getConfig().contains("DefaultSpawn")) {
-		this.defaultSpawn = (Location) this.getConfig().get("DefaultSpawn");
-	    }
+		commands();
+		events();
 	}
 
-	// Partie des commandes
-	this.getCommand("compass").setExecutor(this.changeRegisterLocationCommand);
-
-	// Partie des evenements
-	this.getServer().getPluginManager().registerEvents(this.clickCompassEvent, this);
-	this.getServer().getPluginManager().registerEvents(this.receiptTargetNameEvent, this);
-	this.getServer().getPluginManager().registerEvents(this.quitEvent, this);
-    }
-
-    @Override
-    public void onDisable() {
-	super.onDisable();
-
-	if (this.getDataFolder().exists()) {
-	    try {
-		for (Map.Entry<String, Location> entry : this.Positions.entrySet()) {
-		    this.getConfig().set("RegisterLocation." + entry.getKey(), entry.getValue());
-		}
-
-		if (this.defaultSpawn != null) {
-		    this.getConfig().set("DefaultSpawn", this.defaultSpawn);
-		}
-
-		this.saveConfig();
-
-	    } catch (Exception e) {
-		sendMessage(this.getServer().getConsoleSender(), ChatColor.RED + "ERROR enregistrement des positions");
-		sendMessage(this.getServer().getConsoleSender(), ChatColor.RED + e.getMessage());
-	    }
-	} else
-	    sendMessage(this.getServer().getConsoleSender(), ChatColor.RED + "Fichier config introuvable");
-
-	this.searchDemands.clear();
-	this.targetDemands.clear();
-	this.Positions.clear();
-    }
-
-    public static void sendMessage(CommandSender sender, String message) {
-	sender.sendMessage(ChatColor.AQUA + "" + ChatColor.BOLD + "[Boussole] " + ChatColor.RESET + message);
-    }
-
-    public static CompassMain getInstance() {
-	return instance;
-    }
-
-    public ClickCompassEvent getClickCompassEvent() {
-	return clickCompassEvent;
-    }
-
-    public HashMap<String, Location> getPositions() {
-	return Positions;
-    }
-
-    public void setPositions(HashMap<String, Location> positions) {
-	Positions = positions;
-    }
-
-    public Location getDefaultSpawn() {
-	return defaultSpawn;
-    }
-
-    public void setDefaultSpawn(Location defaultSpawn) {
-	this.defaultSpawn = defaultSpawn;
-    }
-
-    public List<String> getSearchDemands() {
-	return searchDemands;
-    }
-
-    public void addBlockedPlayerToList(String name, String player) {
-	blockedPlayers.get(name).add(player);
-    }
-    public void removeBlockedPlayerFromList(String name, String player) {
-	blockedPlayers.get(name).remove(player);
-    }
-    
-    public boolean isPlayerBlocked(String name, String player) {
-	for (int i = 0; i < blockedPlayers.size(); i++) {
-		if (blockedPlayers.get(name).get(i).toString().equalsIgnoreCase(player)) {
-		    return true;
-		}
+	private void events() {
+		this.getServer().getPluginManager().registerEvents(new ReceiptTargetNameEvent(), this);
+		this.getServer().getPluginManager().registerEvents(new QuitEvent(), this);
+		this.getServer().getPluginManager().registerEvents(new OpenCompassEvent(), this);
+		this.getServer().getPluginManager().registerEvents(new CloseCompassEvent(), this);
+		this.getServer().getPluginManager().registerEvents(new QuitEvent(), this);
 	}
-	return false;
-    }
 
-    public HashMap<String, String> getTargetDemands() {
-	return targetDemands;
-    }
+	private void commands() {
+		this.getCommand("compass").setExecutor(new ChangeRegisterLocationCommand());
+		this.getCommand("compassfollowaccept").setExecutor(new CompassFollowAcceptCommand());
+		this.getCommand("compassfollowrefuse").setExecutor(new CompassFollowRefuseCommand());
+	}
 
-    public List<String> getBlockDemands() {
-	return blockDemands;
-    }
+	@Override
+	public void onDisable() {
+		super.onDisable();
 
-    public void setBlockDemands(List<String> blockDemands) {
-	this.blockDemands = blockDemands;
-    }
+		if (this.getDataFolder().exists()) {
+			try {
+				for (Map.Entry<String, Location> entry : this.Positions.entrySet()) {
+					this.getConfig().set("RegisterLocation." + entry.getKey(), entry.getValue());
+				}
+
+				this.saveConfig();
+
+			} catch (Exception e) {
+				sendMessage(this.getServer().getConsoleSender(), ChatColor.RED + "ERROR enregistrement des positions");
+				sendMessage(this.getServer().getConsoleSender(), ChatColor.RED + e.getMessage());
+			}
+		} else
+			sendMessage(this.getServer().getConsoleSender(), ChatColor.RED + "Fichier config introuvable");
+
+		searchDemands.clear();
+		this.Positions.clear();
+	}
+
+	public static void sendMessage(CommandSender sender, String message) {
+		sender.sendMessage(ChatColor.AQUA + "" + ChatColor.BOLD + "[Boussole] " + ChatColor.RESET + message);
+	}
+
+	public static CompassMain getInstance() {
+		return instance;
+	}
+
+	public static PositionInvitationManager getPositionInvitationManager() {
+		return positionInvitationManager;
+	}
+	
+	public static CompassManager getCompassManager() {
+		return compassManager;
+	}
+	
+	public HashMap<String, Location> getPositions() {
+		return Positions;
+	}
+
+	public void setPositions(HashMap<String, Location> positions) {
+		Positions = positions;
+	}
+
+	public static List<String> getSearchDemands() {
+		return searchDemands;
+	}
 }

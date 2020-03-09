@@ -1,76 +1,50 @@
 package me.mizaki.boussole.events;
 
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 
+import com.aypi.utils.Timer;
+import com.aypi.utils.inter.TimerFinishListener;
+
 import me.mizaki.boussole.main.CompassMain;
+import me.mizaki.boussole.utils.PositionInvitation;
 
 public class ReceiptTargetNameEvent implements Listener {
 
-    @EventHandler
-    public void onReceipt(AsyncPlayerChatEvent event) {
-	final Player player = event.getPlayer();
-	if ((CompassMain.getInstance().getTargetDemands().containsKey(player.getName()))) {
-	    Player target = Bukkit.getPlayer(CompassMain.getInstance().getTargetDemands().get(player.getName()));
-	    if ((target != null) && (!CompassMain.getInstance().isPlayerBlocked(player.getName(), target.getName()))) {
-		if (event.getMessage().equalsIgnoreCase("yes") || event.getMessage().equalsIgnoreCase("oui")) {
-		    CompassMain.sendMessage(player, "Vous avez accepté la demande");
-		    CompassMain.sendMessage(target,
-			    ChatColor.GOLD + player.getName() + ChatColor.GREEN + " a accepte(e) votre demande");
-		    target.setCompassTarget(player.getLocation());
-		} else if (event.getMessage().equalsIgnoreCase("no") || event.getMessage().equalsIgnoreCase("non")) {
-		    CompassMain.sendMessage(player, "Vous avez refusé la demande");
-		    CompassMain.sendMessage(target,
-			    ChatColor.GOLD + player.getName() + ChatColor.RED + " a refuse(e) votre demande");
-		} else {
-		    CompassMain.sendMessage(player, "Réponse inconnue, demande déclinée par défaut.");
-		    CompassMain.sendMessage(target,
-			    ChatColor.GOLD + player.getName() + ChatColor.RED + " a refuse(e) votre demande");
+	@EventHandler
+	public void onReceipt(AsyncPlayerChatEvent event) {
+		if(CompassMain.getSearchDemands().contains(event.getPlayer().getName())) {
+			Player target = CompassMain.getInstance().getServer().getPlayer(event.getMessage());
+			if(target != null) {
+				PositionInvitation invitation = new PositionInvitation(event.getPlayer(), target);
+				CompassMain.sendMessage(event.getPlayer(), "Invitation envoyée");
+				CompassMain.getPositionInvitationManager().addInvitation(invitation);
+				invitation.notifyTarget();
+				
+				CompassMain.getInstance().getServer().getScheduler().runTask(CompassMain.getInstance(), new Runnable() {
+					public void run() {
+						Timer timer = new Timer(CompassMain.getInstance(), 10, new TimerFinishListener() {
+							
+							@Override
+							public void execute() {
+								if(CompassMain.getPositionInvitationManager().containsInvitation(invitation)) {
+									CompassMain.getPositionInvitationManager().removeInvitation(invitation);
+									invitation.notifySender(false);
+									CompassMain.sendMessage(target, "Temps écoulé");
+								}
+							}
+						});
+						timer.start();
+					}
+				});
+			}
+			else
+				CompassMain.sendMessage(event.getPlayer(), "Joueur introuvable");
+		
+			CompassMain.getSearchDemands().remove(event.getPlayer().getName());
+			event.setCancelled(true);
 		}
-	    } else
-		CompassMain.sendMessage(player, "Le joueur déconnecté ou vous a bloqué");
-
-	    CompassMain.getInstance().getTargetDemands().remove(player.getName());
-	    event.setCancelled(true);
 	}
-
-	if (CompassMain.getInstance().getSearchDemands().contains(player.getName())) {
-
-	    Player target = Bukkit.getPlayer(event.getMessage());
-
-	    if (target != null) {
-		if (!CompassMain.getInstance().getTargetDemands().containsKey(target.getName())) {
-		    CompassMain.sendMessage(player, "Demande envoyée a " + ChatColor.GREEN + target.getName());
-		    CompassMain.sendMessage(target, ChatColor.GOLD + player.getName() + ChatColor.RESET
-			    + " vous demande s'il peut prendre vos coordonnées");
-		    CompassMain.sendMessage(target,
-			    ChatColor.GREEN + "yes | oui " + ChatColor.RESET + "ou " + ChatColor.RED + "no | non");
-		    CompassMain.getInstance().getTargetDemands().put(target.getName(), player.getName());
-		} else
-		    CompassMain.sendMessage(player, "Une demande est déjà en cours vers ce joueur");
-	    } else
-		CompassMain.sendMessage(player, ChatColor.RED + "Joueur introuvable !");
-
-	    CompassMain.getInstance().getSearchDemands().remove(player.getName());
-	    event.setCancelled(true);
-	}
-
-	if (CompassMain.getInstance().getBlockDemands().contains(player.getName())) {
-	    String target = event.getMessage();
-	    if (CompassMain.getInstance().isPlayerBlocked(player.getName(), target)) {
-		CompassMain.getInstance().removeBlockedPlayerFromList(player.getName(), target);
-		CompassMain.sendMessage(player, " vous avez débloqué " + ChatColor.GREEN + target);
-
-	    } else {
-		CompassMain.getInstance().addBlockedPlayerToList(player.getName(), target);
-		CompassMain.sendMessage(player, " vous avez bloqué " + ChatColor.GREEN + target);
-	    }
-
-	}
-
-    }
 }

@@ -1,10 +1,15 @@
-name: Boussole
+name: HumineCompass
 author: MizakiGaming
 main: me.mizaki.boussole.main.CompassMain
 version: 1.4
-api-version: 1.13
-depend: [Aypi]
+api-version: 1.15
 commands:
   compass:
     usage: /compass
     description: permet d'enregistrer une position par la suite retrouvable avec la boussole
+  compassfollowaccept:
+    usage: /compassfollowaccept
+    description: permet d'accepter une invitation
+  compassfollowrefuse:
+    usage: /compassfollowrefuse
+    description: permet de refuser une invitation
